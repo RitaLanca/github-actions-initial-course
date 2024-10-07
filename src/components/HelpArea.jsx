@@ -19,6 +19,7 @@ const HELP_ITEMS = [
   },
 ];
 
+// component that renders a help area
 function HelpArea() {
   return (
     <section data-testid="help-area" id="help-area">
