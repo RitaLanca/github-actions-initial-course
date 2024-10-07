@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,9 +19,12 @@ jobs:
         run: npm run lint
       - name: Test code
         run: npm run test
+
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs: # permite definir as keys dos outputs que serão usados para guardar valores simples
+      script-file: ${{ steps.js-file-step-id.outputs.file}}
     steps:
       - name: Get code
         uses: actions/checkout@v4
@@ -28,11 +32,17 @@ jobs:
         run: npm ci 
       - name: Build code
         run: npm run build
+      - name: Publish JS filename
+        id: js-file-step-id
+        # acha o ficheiro js dentro dos assets recorrendo a uma regex, e retorna o nome do ficheiro.continue-on-error.continue-on-error. 
+        # O nome é atribuido à variavel script-file e escreve num ficheiro de OUTPUT cujo path é dado pela variavel de ambiente GITHUB_OUTPUT
+        run: find dist/assets/*.js -type f -execdir echo 'file={}' >> $GITHUB_OUTPUT ';' 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-files  # artifacts name
           path: dist
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -41,8 +51,10 @@ jobs:
         uses: actions/download-artifact@v4 # this action will download the artifact and unzip here
         with: 
           name: dist-files 
-          # path: dist # onde quero colocar os ficheiros do zip
+          # path: dist # onde quero colocar os ficheiros do zip. Se nao indicar path vai ser na diretoria atual (root)
       - name: Output
         run: ls
+      - name: Output js file name
+        run: echo "${{ needs.build.outputs.script-file}}" #O needs context é usado para aceder aos outputs de todos os jobs
       - name: Deploy
         run: echo "Deploying"
