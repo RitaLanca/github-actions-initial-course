@@ -37,5 +37,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Get build artifacts #download the previous artifacts
+        uses: actions/download-artifact@v4 # this action will download the artifact and unzip here
+        with: 
+          name: dist-files 
+          # path: dist # onde quero colocar os ficheiros do zip
+      - name: Output
+        run: ls
       - name: Deploy
         run: echo "Deploying"
