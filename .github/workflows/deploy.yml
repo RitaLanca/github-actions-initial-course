@@ -13,6 +13,13 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache~
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
       - name: Install dependencies
         run: npm ci 
       - name: Lint code
@@ -28,6 +35,13 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json')}} 
       - name: Install dependencies
         run: npm ci 
       - name: Build code
