@@ -8,8 +8,8 @@ on:
       - main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  lint:
+    runs-on: ubunto-latest
     steps:
       - name: Get code
         uses: actions/checkout@v4
@@ -24,6 +24,20 @@ jobs:
         run: npm ci 
       - name: Lint code
         run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache~
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
+      - name: Install dependencies
+        run: npm ci 
       - name: Test code
         id: run-test-step # identifies the step so it can be referenced in other steps
         run: npm run test
@@ -82,7 +96,7 @@ jobs:
         run: echo "Deploying"
   
   report:
-    needs: [test, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed
+    needs: [lint, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed
     if: failure()
     runs-on: ubunto-latest 
     steps:
