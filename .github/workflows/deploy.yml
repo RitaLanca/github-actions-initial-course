@@ -9,18 +9,20 @@ on:
 
 jobs:
   lint:
-    runs-on: ubunto-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Get code
         uses: actions/checkout@v4
       - name: Cache dependencies
+        id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache~
+          path: node_modules # fazer cache do node_modules
           # identifica a cache
           # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
           key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci 
       - name: Lint code
         run: npm run lint
@@ -30,13 +32,15 @@ jobs:
       - name: Get code
         uses: actions/checkout@v4
       - name: Cache dependencies
+        id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache~
+          path: node_modules # fazer cache do node_modules
           # identifica a cache
           # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
           key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci 
       - name: Test code
         id: run-test-step # identifies the step so it can be referenced in other steps
