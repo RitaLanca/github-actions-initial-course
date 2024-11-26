@@ -35,7 +35,6 @@ jobs:
           name: test-report  # artifacts name
           path: test.json
 
-
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -81,3 +80,13 @@ jobs:
         run: echo "${{ needs.build.outputs.script-file}}" #O needs context é usado para aceder aos outputs de todos os jobs
       - name: Deploy
         run: echo "Deploying"
+  
+  report:
+    needs: [test, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed
+    if: failure()
+    runs-on: ubunto-latest 
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong"
+          echo "${{ ToJson(github) }}"
