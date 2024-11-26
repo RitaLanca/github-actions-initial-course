@@ -25,7 +25,16 @@ jobs:
       - name: Lint code
         run: npm run lint
       - name: Test code
+        id: run-test-step # identifies the step so it can be referenced in other steps
         run: npm run test
+      - name: Upload test report # This test is only needed if failing test
+      # we need to use special conditional function failure, to signalize github actions that should validate this step, even the previous step fail. 
+        if: failure() && steps.run-test-step.outcome == 'failure' 
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report  # artifacts name
+          path: test.json
+
 
   build:
     needs: test
