@@ -2,6 +2,7 @@ name: Matrix Demo
 on: push
 jobs:
     build:
+        continue-on-error: true # avoids failing the entire workflow if one job failed
         strategy:
             matrix: 
                 node-version: [18, 19, 20]
