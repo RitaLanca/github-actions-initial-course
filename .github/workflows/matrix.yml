@@ -7,6 +7,12 @@ jobs:
             matrix: 
                 node-version: [18, 19, 20]
                 os: [ubuntu-latest, windows-latest]
+                include: # to add single combinations
+                  - node-version: 20
+                    os: macos-latest
+                exclude: # to remove single combinations from the matrix
+                  - node-version: 18
+                    os: windows-latest
         runs-on: ${{matrix.os}}
         steps:
             - name: Get code
