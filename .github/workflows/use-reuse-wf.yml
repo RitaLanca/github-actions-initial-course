@@ -86,6 +86,8 @@ jobs:
   deploy:
     needs: build
     uses: ./.github/workflows/reusable-deploy.yml
+    with:
+        artifact-name: dist-files 
 
   report:
     needs: [lint, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed
