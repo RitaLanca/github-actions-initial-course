@@ -1,0 +1,98 @@
+name: Using reusable-deploy workflow  # here the deploy job uses the reusable-deploy workflow
+on:
+  pull_request:
+    types: [opened, edited]
+  workflow_dispatch:  
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules # fazer cache do node_modules
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci 
+      - name: Lint code
+        run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules # fazer cache do node_modules
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-nome-modules-${{ hashFiles('**/package-lock.json')}} 
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci 
+      - name: Test code
+        id: run-test-step # identifies the step so it can be referenced in other steps
+        run: npm run test
+      - name: Upload test report # This test is only needed if failing test
+      # we need to use special conditional function failure, to signalize github actions that should validate this step, even the previous step fail. 
+        if: failure() && steps.run-test-step.outcome == 'failure' 
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report  # artifacts name
+          path: test.json
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs: # permite definir as keys dos outputs que serão usados para guardar valores simples
+      script-file: ${{ steps.js-file-step-id.outputs.file}}
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm # ficheiros ou pastas do que se quer guardar em cache
+          # identifica a cache
+          # a key deve ter um valor que seja parcialmente dinamico, para que a key mude sempre que as dependencias mudarem
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json')}} 
+      - name: Install dependencies
+        run: npm ci 
+      - name: Build code
+        run: npm run build
+      - name: Publish JS filename
+        id: js-file-step-id
+        # acha o ficheiro js dentro dos assets recorrendo a uma regex, e retorna o nome do ficheiro.
+        # O nome é atribuido à variavel script-file e escreve num ficheiro de OUTPUT cujo path é dado pela variavel de ambiente GITHUB_OUTPUT
+        run: find dist/assets/*.js -type f -execdir echo 'file={}' >> $GITHUB_OUTPUT ';' 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files  # artifacts name
+          path: dist
+
+  deploy:
+    needs: build
+    uses: ./.github/workflows/reusable-deploy.yml
+
+  report:
+    needs: [lint, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed
+    if: failure()
+    runs-on: ubunto-latest 
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong"
+          echo "${{ ToJson(github) }}"
