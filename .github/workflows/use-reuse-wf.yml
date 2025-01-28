@@ -88,6 +88,8 @@ jobs:
     uses: ./.github/workflows/reusable-deploy.yml
     with:
         artifact-name: dist-files 
+    # secrets:
+        # some-secret: ${{ secrets.SOME_SECRET }}
 
   report:
     needs: [lint, deploy] # this job will wait for test & deploy job to be finished. After finish, it will evaluate if any of previous job failed

@@ -7,7 +7,9 @@ on:
                 required: false
                 default: 'dist-files' # give a default value
                 type: string
-
+        # secrets:
+        #     some-secret:
+        #         required: true
 jobs:
     deploy:
         runs-on: ubuntu-latest
