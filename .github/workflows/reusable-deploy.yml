@@ -1,9 +1,23 @@
 name: Reusable Deploy
-on: workflow_call # this set this workflow as reusable by other workflows
+on: 
+    workflow_call: # this set this workflow as reusable by other workflows
+        inputs:
+            artifact-name:
+                description: 'The name of the deployable artifact'
+                required: false
+                default: 'dist-files' # give a default value
+                type: string
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
-            - name: Deploy
-              run: echo "Deploying"
+             - name: Get build artifacts # download the previous artifacts
+               uses: actions/download-artifact@v4  # this action will download the artifact and unzip here
+               with: 
+                  name: ${{ inputs.artifact-name }}
+             - name: List files
+               run: ls 
+             - name: Deploy
+               run: echo "Deploying"
         
