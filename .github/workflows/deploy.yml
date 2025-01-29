@@ -95,7 +95,7 @@ jobs:
       - name: Output
         run: ls
       - name: Output js file name
-        run: echo "${{ needs.build.outputs.script-file}}" #O needs context é usado para aceder aos outputs de todos os jobs
+        run: echo "${{ needs.build.outputs.script-file}}" # O needs context é usado para aceder aos outputs de todos os jobs
       - name: Deploy
         run: echo "Deploying"
   

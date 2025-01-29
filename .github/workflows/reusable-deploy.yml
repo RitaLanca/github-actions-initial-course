@@ -1,25 +1,34 @@
 name: Reusable Deploy
 on: 
-    workflow_call: # this set this workflow as reusable by other workflows
-        inputs:
-            artifact-name:
-                description: 'The name of the deployable artifact'
-                required: false
-                default: 'dist-files' # give a default value
-                type: string
-        # secrets:
-        #     some-secret:
-        #         required: true
+  workflow_call: # this set this workflow as reusable by other workflows
+    inputs:
+      artifact-name:
+        description: 'The name of the deployable artifact'
+        required: false
+        default: 'dist-files' # give a default value
+        type: string
+    outputs:
+      result:
+        description: 'The result of the deployment operation'
+        value: ${{ jobs.deploy.outputs.job-result }} # pass the result of the job to the output of the workflow
+    # secrets:
+    #     some-secret:
+    #         required: true
 jobs:
     deploy:
-        runs-on: ubuntu-latest
-        steps:
-             - name: Get build artifacts # download the previous artifacts
-               uses: actions/download-artifact@v4  # this action will download the artifact and unzip here
-               with: 
-                  name: ${{ inputs.artifact-name }}
-             - name: List files
-               run: ls 
-             - name: Deploy
-               run: echo "Deploying"
-        
+      outputs:
+        job-result: ${{ steps.step-result.outputs.result }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Get build artifacts # download the previous artifacts
+          uses: actions/download-artifact@v4  # this action will download the artifact and unzip here
+          with: 
+            name: ${{ inputs.artifact-name }}
+        - name: List files
+          run: ls 
+        - name: Deploy
+          run: echo "Deploying"
+        - name: Output result
+          id: step-result
+          run: echo "result=success" >> $GITHUB_OUTPUT  # write the result of the job to the output file that is accessed via GITHUB_OUTPUT env variable
+      
