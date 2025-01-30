@@ -124,6 +124,7 @@ jobs:
 
 
 ## Controlling Execution Flow & Job execution
+- on step , via *continue-on-error* field
 - on job or step, via *if* field:
 
 ```YAML
@@ -145,3 +146,28 @@ jobs:
 		      path: test.json
 ```
 
+
+## Matrix
+It allows to define several variants for the same job. So it run several jobs from the same job but with different combinations (in this case 6 jobs, without considering exclude and include fields)
+
+```YAML
+
+jobs:
+    build:
+        strategy:  
+            matrix: # to add 1 or more combinations
+                node-version: [18, 19, 20]
+                os: [ubuntu-latest, windows-latest]
+                include: # to add single combinations
+                  - node-version: 20
+                    os: macos-latest
+                exclude: # to remove single combinations from the matrix
+                  - node-version: 18
+                    os: windows-latest
+
+```
+
+## Reusable workflow
+- A reusable workflow is defeined like a normal workflow but includes the `workflow_call` trigger.
+- To call a reusable workflow, it is done via `uses`
+- Workflow can have inputs and outputs
